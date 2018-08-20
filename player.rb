@@ -14,7 +14,16 @@ class Player
     @cash += 10
   end
 
+  def associate_whish_deck(card_deck)
+    @card_deck = card_deck
+  end
+
+  def take_card
+    @hand.take_card(card_deck)
+  end
+
   protected
 
+  attr_reader :card_deck
   attr_writer :cash
 end
