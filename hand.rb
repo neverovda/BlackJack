@@ -1,14 +1,12 @@
 class Hand
+  attr_reader :cards
+
   def initialize
     @cards = []
   end
 
   def take_card(card_deck)
     @cards << card_deck.take_card
-  end
-
-  def show_cards
-    cards
   end
 
   def amt_card
@@ -22,8 +20,6 @@ class Hand
   end
 
   protected
-
-  attr_reader :cards
 
   def sum_points
     total = 0
