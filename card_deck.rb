@@ -19,4 +19,8 @@ class CardDeck
   def take_card
     @cards.pop
   end
+
+  def time_to_mix?
+    @cards.length < 45
+  end
 end

@@ -4,7 +4,7 @@ require_relative 'player'
 require_relative 'croupier'
 
 class GameProcess
-  attr_reader :card_dec, :player, :croupier
+  attr_reader :player, :croupier
 
   def initialize
     @player = Player.new
@@ -39,20 +39,22 @@ class GameProcess
     end
     round_result
     ovarall_result
+    discard_and_mix
   end
 
   protected
 
-  attr_writer :card_deck
+  attr_accessor :card_deck
 
   SUITS = { diamonds: "\u{2666}", hearts: "\u{2665}",
             clubs: "\u{2663}", spades: "\u{2660}" }.freeze
 
   def change_deck
-    card_deck = CardDeck.new
+    self.card_deck = CardDeck.new
     player.associate_whish_deck(card_deck)
     croupier.associate_whish_deck(card_deck)
-  end
+    puts 'The cards are mixed'
+   end
 
   def selection_number
     gets.chomp.to_i
@@ -123,6 +125,12 @@ class GameProcess
       puts 'YOU LOSER!'
       :exit
     end
+  end
+
+  def discard_and_mix
+    player.discard_cards
+    croupier.discard_cards
+    change_deck if card_deck.time_to_mix?
   end
 end
 

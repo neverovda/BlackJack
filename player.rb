@@ -28,6 +28,10 @@ class Player
     hand.cards
   end
 
+  def discard_cards
+    hand.clear
+  end
+
   def amt_points
     hand.amt_points
   end

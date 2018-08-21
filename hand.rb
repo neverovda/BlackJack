@@ -2,7 +2,7 @@ class Hand
   attr_reader :cards
 
   def initialize
-    @cards = []
+    clear
   end
 
   def take_card(card_deck)
@@ -17,6 +17,10 @@ class Hand
     total = sum_points
     total = amt_points if total > 21 && change_points
     total
+  end
+
+  def clear
+    @cards = []
   end
 
   protected
