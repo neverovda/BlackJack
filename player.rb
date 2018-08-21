@@ -1,4 +1,6 @@
 class Player
+  CASH_FOR_VICTORY = 10
+
   attr_reader :cash
 
   def initialize
@@ -7,11 +9,11 @@ class Player
   end
 
   def lost_round
-    @cash -= 10
+    @cash -= CASH_FOR_VICTORY
   end
 
   def win_round
-    @cash += 10
+    @cash += CASH_FOR_VICTORY
   end
 
   def associate_whish_deck(card_deck)
@@ -28,6 +30,14 @@ class Player
 
   def amt_points
     hand.amt_points
+  end
+
+  def higher_21?
+    amt_points > 21
+  end
+
+  def not_higher_21?
+    !higher_21?
   end
 
   protected
