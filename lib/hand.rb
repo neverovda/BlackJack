@@ -9,13 +9,9 @@ class Hand
     @cards << card_deck.take_card
   end
 
-  def amt_card
-    cards.length
-  end
-
   def amt_points
     total = sum_points
-    total = amt_points if total > 21 && change_points
+    total = amt_points if total > Settings::LIMIT_OF_POINTS && change_points
     total
   end
 

@@ -27,7 +27,7 @@ class GameProcess
   end
 
   def begin_round
-    puts "CASH     your:#{player.cash}$  croupier:#{croupier.cash}$ "
+    puts "CASH     your: #{player.cash}$  croupier: #{croupier.cash}$"
     discard_and_mix
     give_out_cards
     show_cards_together(:hidden)
@@ -97,9 +97,9 @@ class GameProcess
     puts "Croupier points: #{croupier.amt_points}."
 
     return draw if player.amt_points == croupier.amt_points
-    return draw if player.higher_21? && croupier.higher_21?
-    return you_win_round if croupier.higher_21?
-    return casino_win_round if player.higher_21?
+    return draw if player.excess? && croupier.excess?
+    return you_win_round if croupier.excess?
+    return casino_win_round if player.excess?
     return you_win_round if player.amt_points > croupier.amt_points
     casino_win_round
   end

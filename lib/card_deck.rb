@@ -21,6 +21,6 @@ class CardDeck
   end
 
   def time_to_mix?
-    @cards.length < 45
+    @cards.length < Settings::REST_CARD_DECK
   end
 end

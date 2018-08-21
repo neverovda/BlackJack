@@ -1,3 +1,4 @@
+require_relative 'lib/settings'
 require_relative 'lib/card_deck'
 require_relative 'lib/hand'
 require_relative 'lib/player'

@@ -1,19 +1,17 @@
 class Player
-  CASH_FOR_VICTORY = 10
-
   attr_reader :cash
 
   def initialize
-    @cash = 100
+    @cash = Settings::INITIAL_DEPOSIT
     @hand = Hand.new
   end
 
   def lost_round
-    @cash -= CASH_FOR_VICTORY
+    @cash -= Settings::CASH_FOR_VICTORY
   end
 
   def win_round
-    @cash += CASH_FOR_VICTORY
+    @cash += Settings::CASH_FOR_VICTORY
   end
 
   def associate_whish_deck(card_deck)
@@ -36,8 +34,8 @@ class Player
     hand.amt_points
   end
 
-  def higher_21?
-    amt_points > 21
+  def excess?
+    amt_points > Settings::LIMIT_OF_POINTS
   end
 
   protected
