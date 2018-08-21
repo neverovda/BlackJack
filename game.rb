@@ -14,13 +14,19 @@ class GameProcess
   end
 
   def start
+    loop do
+      break if round == :exit
+    end
+  end
+
+  def round
     give_out_cards
-    show_cards(player.cards)
-    show_cards(croupier.cards) # must be hidden
+    show_cards_together(:hidden)
 
     p '1. Pass'
     p '2. Take card'
     p '3. Open cards'
+    p '0. Abort the game'
 
     case selection_number
     when 1
@@ -28,14 +34,11 @@ class GameProcess
     when 2
       player.take_card
       croupier.auto_move
-      show_cards(player.cards)
-      show_cards(croupier.cards)
-    when 3
-      show_cards(player.cards)
-      show_cards(croupier.cards)
+    when 0
+      return :exit
     end
-
     round_result
+    ovarall_result
   end
 
   protected
@@ -56,9 +59,21 @@ class GameProcess
   end
 
   def show_cards(cards)
-    srt = ''
-    cards.each { |card| srt += "#{card[:rang]}#{SUITS[card[:suit]]} " }
-    puts srt
+    cards.each { |card| print "#{card[:rang]}#{SUITS[card[:suit]]} " }
+    puts
+  end
+
+  def show_hidden_cards(cards)
+    cards.each { |_card| print "\u{25a1}  " }
+    puts
+  end
+
+  def show_cards_together(show)
+    print 'You    > '
+    show_cards(player.cards)
+    print 'Casino > '
+    show_cards(croupier.cards) if show == :evident
+    show_hidden_cards(croupier.cards) if show == :hidden
   end
 
   def give_out_cards
@@ -69,12 +84,13 @@ class GameProcess
   end
 
   def round_result
-    p "You points #{player.amt_points}"
-    p "Croupier points #{croupier.amt_points}"
+    show_cards_together(:evident)
+    print "You points: #{player.amt_points}. "
+    puts "Croupier points: #{croupier.amt_points}."
 
     if (player.amt_points == croupier.amt_points) ||
        (player.higher_21? && croupier.higher_21?)
-      p 'Draw'
+      puts 'The round is over. Draw.'
     elsif croupier.higher_21? ||
           (player.amt_points > croupier.amt_points && player.not_higher_21?)
       you_win_round
@@ -84,16 +100,35 @@ class GameProcess
   end
 
   def you_win_round
-    p 'You win'
+    puts 'You win round.'
     player.win_round
     croupier.lost_round
   end
 
   def casino_win_round
-    p 'Casino win'
+    puts 'Casino win round.'
     player.lost_round
     croupier.win_round
   end
+
+  def ovarall_result
+    puts "CASH     your:#{player.cash}$  croupier:#{croupier.cash}$ "
+
+    if player.cash.zero?
+      puts 'YOU WINNER!'
+      :exit
+    end
+
+    if croupier.cash.zero?
+      puts 'YOU LOSER!'
+      :exit
+    end
+  end
 end
 
-GameProcess.new
+loop do
+  GameProcess.new
+  print 'Do you want to play more? (Y/N)'
+  answer = gets.chomp
+  break if answer !~ /Y/i
+end
