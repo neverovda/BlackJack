@@ -40,10 +40,6 @@ class Player
     amt_points > 21
   end
 
-  def not_higher_21?
-    !higher_21?
-  end
-
   protected
 
   attr_reader :card_deck, :hand

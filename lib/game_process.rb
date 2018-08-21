@@ -1,6 +1,4 @@
 class GameProcess
-  attr_reader :player, :croupier
-
   def initialize
     @player = Player.new
     @croupier = Croupier.new
@@ -14,15 +12,29 @@ class GameProcess
     end
   end
 
+  protected
+
+  attr_reader :player, :croupier
+  attr_accessor :card_deck
+
+  SUITS = { diamonds: "\u{2666}", hearts: "\u{2665}",
+            clubs: "\u{2663}", spades: "\u{2660}" }.freeze
+
   def round
+    begin_round
+    return :exit if choice == :exit
+    round_result
+  end
+
+  def begin_round
+    puts "CASH     your:#{player.cash}$  croupier:#{croupier.cash}$ "
+    discard_and_mix
     give_out_cards
     show_cards_together(:hidden)
+  end
 
-    p '1. Pass'
-    p '2. Take card'
-    p '3. Open cards'
-    p '0. Abort the game'
-
+  def choice
+    print_choise
     case selection_number
     when 1
       croupier.auto_move
@@ -30,26 +42,23 @@ class GameProcess
       player.take_card
       croupier.auto_move
     when 0
-      return :exit
+      :exit
     end
-    round_result
-    ovarall_result
-    discard_and_mix
   end
 
-  protected
-
-  attr_accessor :card_deck
-
-  SUITS = { diamonds: "\u{2666}", hearts: "\u{2665}",
-            clubs: "\u{2663}", spades: "\u{2660}" }.freeze
+  def print_choise
+    puts '1. Pass'
+    puts '2. Take card'
+    puts '3. Open cards'
+    puts '0. Abort the game'
+  end
 
   def change_deck
     self.card_deck = CardDeck.new
     player.associate_whish_deck(card_deck)
     croupier.associate_whish_deck(card_deck)
     puts 'The cards are mixed'
-   end
+  end
 
   def selection_number
     gets.chomp.to_i
@@ -80,46 +89,46 @@ class GameProcess
     end
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
   def round_result
     show_cards_together(:evident)
     print "You points: #{player.amt_points}. "
     puts "Croupier points: #{croupier.amt_points}."
 
-    if (player.amt_points == croupier.amt_points) ||
-       (player.higher_21? && croupier.higher_21?)
-      puts 'The round is over. Draw.'
-    elsif croupier.higher_21? ||
-          (player.amt_points > croupier.amt_points && player.not_higher_21?)
-      you_win_round
-    else
-      casino_win_round
-    end
+    return draw if player.amt_points == croupier.amt_points
+    return draw if player.higher_21? && croupier.higher_21?
+    return you_win_round if croupier.higher_21?
+    return casino_win_round if player.higher_21?
+    return you_win_round if player.amt_points > croupier.amt_points
+    casino_win_round
+  end
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/AbcSize
+
+  def draw
+    puts 'The round is over. Draw.'
   end
 
   def you_win_round
     puts 'You win round.'
     player.win_round
     croupier.lost_round
+    overall_result
   end
 
   def casino_win_round
     puts 'Casino win round.'
     player.lost_round
     croupier.win_round
+    overall_result
   end
 
-  def ovarall_result
-    puts "CASH     your:#{player.cash}$  croupier:#{croupier.cash}$ "
-
-    if player.cash.zero?
-      puts 'YOU WINNER!'
-      :exit
-    end
-
-    if croupier.cash.zero?
-      puts 'YOU LOSER!'
-      :exit
-    end
+  def overall_result
+    totals = { player.cash => 'YOU LOSER!', croupier.cash => 'YOU WINNER!' }
+    return unless totals.key?(0)
+    puts totals[0]
+    :exit
   end
 
   def discard_and_mix
