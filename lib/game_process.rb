@@ -1,5 +1,6 @@
 class GameProcess
-  def initialize
+  def initialize(interface)
+    @interface = interface
     @player = Player.new
     @croupier = Croupier.new
     change_deck
@@ -14,11 +15,8 @@ class GameProcess
 
   protected
 
-  attr_reader :player, :croupier
+  attr_reader :player, :croupier, :interface
   attr_accessor :card_deck
-
-  SUITS = { diamonds: "\u{2666}", hearts: "\u{2665}",
-            clubs: "\u{2663}", spades: "\u{2660}" }.freeze
 
   def round
     begin_round
@@ -27,15 +25,14 @@ class GameProcess
   end
 
   def begin_round
-    puts "CASH     your: #{player.cash}$  croupier: #{croupier.cash}$"
+    interface.separate_rounds
+    interface.current_cash(player.cash, croupier.cash)
     discard_and_mix
     give_out_cards
-    show_cards_together(:hidden)
   end
 
   def choice
-    print_choise
-    case selection_number
+    case interface.make_choice
     when 1
       croupier.auto_move
     when 2
@@ -46,88 +43,55 @@ class GameProcess
     end
   end
 
-  def print_choise
-    puts '1. Pass'
-    puts '2. Take card'
-    puts '3. Open cards'
-    puts '0. Abort the game'
-  end
-
   def change_deck
     self.card_deck = CardDeck.new
+    interface.cards_mix
     player.associate_whish_deck(card_deck)
     croupier.associate_whish_deck(card_deck)
-    puts 'The cards are mixed'
-  end
-
-  def selection_number
-    gets.chomp.to_i
-  end
-
-  def show_cards(cards)
-    cards.each { |card| print "#{card[:rang]}#{SUITS[card[:suit]]} " }
-    puts
-  end
-
-  def show_hidden_cards(cards)
-    cards.each { |_card| print "\u{25a1}  " }
-    puts
-  end
-
-  def show_cards_together(show)
-    print 'You    > '
-    show_cards(player.cards)
-    print 'Casino > '
-    show_cards(croupier.cards) if show == :evident
-    show_hidden_cards(croupier.cards) if show == :hidden
   end
 
   def give_out_cards
-    2.times do |_n|
+    2.times do
       player.take_card
       croupier.take_card
     end
+    interface.show_cards_hidden(player.cards, croupier.cards.length)
   end
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   def round_result
-    show_cards_together(:evident)
-    print "You points: #{player.amt_points}. "
-    puts "Croupier points: #{croupier.amt_points}."
+    interface.show_cards_evident(player.cards, croupier.cards)
+    interface.current_points(player.amt_points, croupier.amt_points)
 
-    return draw if player.amt_points == croupier.amt_points
-    return draw if player.excess? && croupier.excess?
-    return you_win_round if croupier.excess?
-    return casino_win_round if player.excess?
-    return you_win_round if player.amt_points > croupier.amt_points
-    casino_win_round
+    return interface.draw if player.amt_points == croupier.amt_points
+    return interface.draw if player.excess? && croupier.excess?
+    return win_round if croupier.excess?
+    return lose_round if player.excess?
+    return win_round if player.amt_points > croupier.amt_points
+    lose_round
   end
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/AbcSize
 
-  def draw
-    puts 'The round is over. Draw.'
-  end
-
-  def you_win_round
-    puts 'You win round.'
+  def win_round
+    interface.win_round
     player.win_round
     croupier.lost_round
     overall_result
   end
 
-  def casino_win_round
-    puts 'Casino win round.'
+  def lose_round
+    interface.lose_round
     player.lost_round
     croupier.win_round
     overall_result
   end
 
   def overall_result
-    totals = { player.cash => 'YOU LOSER!', croupier.cash => 'YOU WINNER!' }
+    totals = { player.cash => :lose_game, croupier.cash => :win_game }
     return unless totals.key?(0)
-    puts totals[0]
+    interface.send(totals[0])
     :exit
   end
 

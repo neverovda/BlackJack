@@ -1,6 +1,2 @@
 Style/Documentation:
   Enabled: false
-
-Metrics/ClassLength:
-  Exclude:
-    - 'lib/game_process.rb'
