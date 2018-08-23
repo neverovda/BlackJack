@@ -13,7 +13,7 @@ class CardDeck
   end
 
   def make_card(rang, suit, points)
-    { rang: rang, suit: suit, points: points }
+    Card.new(rang: rang, suit: suit, points: points)
   end
 
   def take_card

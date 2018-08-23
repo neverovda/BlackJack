@@ -20,7 +20,7 @@ class TextInterface
   end
 
   def show_cards(cards)
-    cards.each { |card| print "#{card[:rang]}#{SUITS[card[:suit]]} " }
+    cards.each { |card| print "#{card.rang}#{SUITS[card.suit]} " }
     puts
   end
 
