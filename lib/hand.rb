@@ -11,7 +11,10 @@ class Hand
 
   def amt_points
     total = sum_points
-    total = amt_points if total > Settings::LIMIT_OF_POINTS && change_points!
+    if total > 21 && ace_eleven_in_deck?
+      change_ace_eleven_points!
+      total = amt_points
+    end
     total
   end
 
@@ -27,10 +30,17 @@ class Hand
     total
   end
 
-  def change_points!
-    ace_eleven = cards.find { |card| card[:rang] == 'A' && card[:points] == 11 }
-    return false unless ace_eleven
+  def first_ace_eleven
+    @cards.find { |card| card[:rang] == 'A' && card[:points] == 11 }
+  end
+
+  def ace_eleven_in_deck?
+    return true if first_ace_eleven
+    false
+  end
+
+  def change_ace_eleven_points!
+    ace_eleven = first_ace_eleven
     ace_eleven[:points] = 1
-    true
   end
 end
